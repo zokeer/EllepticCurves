@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Numerics;
 using EllipticCurves.Model;
@@ -51,7 +52,10 @@ namespace EllipticCurves.Services
                     if (operation == "M")
                     {
                         var firstPoint = GetPoint(file, curveType);
-                        var number = BigInteger.Parse(file.ReadLine());
+                        var numberRaw = file.ReadLine();
+                        var number = numberRaw.Contains("h") || numberRaw.Contains("x") ?
+                            BigInteger.Parse(numberRaw.Substring(2), NumberStyles.AllowHexSpecifier) : 
+                            BigInteger.Parse(numberRaw);
 
                         var result = curve.MultiplyPointByNumber(firstPoint, number);
 
@@ -82,7 +86,13 @@ namespace EllipticCurves.Services
             BigInteger x;
             BigInteger y;
 
-            if (curveType.Type == CurveType.Nonsupersingular || curveType.Type == CurveType.Supersingular)
+            if (xRaw.Contains("h") || xRaw.Contains("x"))
+            {
+                x = BigInteger.Parse(xRaw.Substring(2), NumberStyles.AllowHexSpecifier);
+                y = BigInteger.Parse(yRaw.Substring(2), NumberStyles.AllowHexSpecifier);
+
+            }
+            else if (curveType.Type == CurveType.Nonsupersingular || curveType.Type == CurveType.Supersingular)
             {
                 x = BitString.BinaryToBigInteger(xRaw);
                 y = BitString.BinaryToBigInteger(yRaw);
